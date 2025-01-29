@@ -1,5 +1,11 @@
 use crate::{Context, Error, HISTORY, SYSTEM, ChatMessage};
 
+#[poise::command(prefix_command)]
+pub async fn register(ctx: Context<'_>) -> Result<(), Error> {
+    poise::builtins::register_application_commands_buttons(ctx).await?;
+    Ok(())
+}
+
 /// Show this help menu
 #[poise::command(prefix_command, track_edits, slash_command)]
 pub async fn help(
@@ -26,7 +32,7 @@ pub async fn bonk(
     #[description = "Amount of messages to delete, leave empty or zero to reset all"]
     mut amount: i32
     ) -> Result<(), Error> {
-    let system_message = ChatMessage::system(SYSTEM.into());
+    let system_message = ChatMessage::system(SYSTEM.clone().into());
     if (amount) == 0{
     unsafe {
         HISTORY = vec![system_message];

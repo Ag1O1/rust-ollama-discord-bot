@@ -54,7 +54,7 @@ async fn main() {
     let intents =
         serenity::GatewayIntents::non_privileged() | serenity::GatewayIntents::MESSAGE_CONTENT;
     let options = poise::FrameworkOptions {
-        commands: vec![commands::help(), commands::bonk(), commands::system(), commands::logs()],
+        commands: vec![commands::help(), commands::bonk(), commands::system(), commands::logs(), commands::register()],
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some("~".into()),
             edit_tracker: Some(Arc::new(poise::EditTracker::for_timespan(

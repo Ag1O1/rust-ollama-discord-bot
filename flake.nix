@@ -37,8 +37,7 @@
     devShells.x86_64-linux.run = pkgs.mkShell {
       DISCORD_TOKEN = "<discord_token>";
       shellHook = ''
-        ./target/debug/discord-ollama
+        /home/amr/projects/rust/discord-ollama/target/debug/discord-ollama
       '';
     };
-  };
 }
