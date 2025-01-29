@@ -14,7 +14,7 @@ nix shell to achieve this for now.
 
 - [ ] basic functionallity and settings (get to a state where i can replace this
       with a previous one i made in python)
-- [ ] add nix development shell (for those 0.001% of nix users who might use
+- [x] add nix development shell (for those 0.001% of nix users who might use
       this)
 - [ ] save system using json
 - [ ] unhardcode a bunch of stuff (add customizability)
