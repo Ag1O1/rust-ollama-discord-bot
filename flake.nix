@@ -7,6 +7,7 @@
   outputs = {nixpkgs, ...}: let
     system = "x86_64-linux";
     pkgs = nixpkgs.legacyPackages.${system};
+    token = "<token>";
   in {
     devShells.x86_64-linux.default = pkgs.mkShell {
       # some dependencies, OPENSSL is required for the ollama rust lib.
@@ -28,16 +29,17 @@
       OPENSSL_NO_VENDOR = 1;
       OPENSSL_LIB_DIR = "${pkgs.lib.getLib pkgs.openssl}/lib";
       # bot token
-      DISCORD_TOKEN = "<token>";
+      DISCORD_TOKEN = token;
       shellHook = ''
         fish
       '';
     };
     # i use this to run the discord bot.
     devShells.x86_64-linux.run = pkgs.mkShell {
-      DISCORD_TOKEN = "<discord_token>";
+      DISCORD_TOKEN = token;
       shellHook = ''
-        /home/amr/projects/rust/discord-ollama/target/debug/discord-ollama
+        ./target/debug/discord-ollama
       '';
     };
+  };
 }

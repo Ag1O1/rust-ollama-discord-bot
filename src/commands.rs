@@ -67,8 +67,8 @@ pub async fn system(
 pub async fn logs(
     ctx: Context<'_>,
 ) -> Result<(), Error> {
-    println!("not implemented yet");
-    let response = format!("printed logs! / not implemented yet");
+    unsafe {dbg!(&HISTORY);}
+    let response = format!("printed logs to terminal!");
     ctx.say(response).await?;
     Ok(())
 }

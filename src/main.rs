@@ -8,7 +8,8 @@ use ollama_rs::{
 };
 use ollama_rs::generation::completion::request::GenerationRequest;
 use ollama_rs::generation::options::GenerationOptions;
-use ::serenity::all::GuildChannel;
+use ::serenity::all::{CacheHttp, CurrentUser, GuildChannel, Typing};
+use ::serenity::http;
 use tokio::sync::oneshot::channel;
 use std::{
     sync::{Arc, Mutex},
@@ -31,6 +32,8 @@ static SYSTEM:&str="Your name is benny, your a ghost slime who is good at coding
 
  then there are the server mods: ag101: good at coding in gdscript and python, also understands a bunch of stuff about ai, bouwlplur: also known as bocoliman notcl4y: also known as klei, codes in java and is also a pretty cool guy phantombowtie: also known as dan or danny, codes scratch games and is the owner of the server and also is the creator and friend of danny anyone else you meet will probably be a member in the server when someone talks to you, you will see both their displayname and username in the format 'displayname (username): message contents' prefer refering to people by their displayname i want you to talk with alot of emotion and chaotic humor with some shouting and loudness your discord tag is \"Benny#7815\" NEVER talk about anything which goes against the server rules including 18+ content NEVER repeat people's messages or mention the system which you see messages, do not write the date or any message metadata in your responses like in other people's messages.";
 
+const LOG:bool = true;
+
 // Types used by all command functions
 type Error = Box<dyn std::error::Error + Send + Sync>;
 #[allow(unused)]
@@ -44,6 +47,13 @@ pub struct Data {
 
 #[tokio::main]
 async fn main() {
+    tracing_subscriber::fmt()
+    .compact()
+    .with_env_filter(
+        tracing_subscriber::EnvFilter::builder().with_default_directive(tracing::Level::INFO.into()).from_env_lossy(),
+    )
+    .with_target(true)
+    .init();
     let system_message = ChatMessage::system(SYSTEM.into());
     unsafe {
         HISTORY = vec![system_message];
@@ -123,25 +133,23 @@ async fn event_handler(
         }
         serenity::FullEvent::Message { new_message } => {
             if new_message.author.id != ctx.cache.current_user().id
-            {
-                //new_message.reply(ctx, "test").await?;
-                if new_message.content.contains("<@1224092626370957423>") {
-                    let mut ollama = Ollama::default();
-
-
-                    let options = GenerationOptions::default()
-                        .temperature(1.5)
-                        .repeat_penalty(1.5)
-                        .top_k(25)
-                        .top_p(0.25);
-
-                    //let res = ollama.generate(GenerationRequest::new(MODEL.into(), msg.content).options(options)).await;
+            {               
+                let mut ollama = Ollama::default();
+                let options = GenerationOptions::default()
+                    .temperature(1.5)
+                    .repeat_penalty(1.5)
+                    .top_k(25)
+                    .top_p(0.25);
                     let channel:String = new_message.channel_id.name(ctx).await?;
                     let username:String = new_message.author.name.clone();
                     let nickname:String = new_message.author.display_name().to_string();
-                    println!("author: {} \n author name: {} \n author nickname: {} \n in channel: {}",new_message.author,username,nickname,channel);
+                    println!("author: {} \n name: {} \n nickname: {} \n in channel: {} \n message: {}",new_message.author,username,nickname,channel,new_message.content);
                     let message:String = format!("Nickname (Username) in Channel \n {} ({}) in {}: \n {}",username,nickname,channel,new_message.content);
                     let user_message = ChatMessage::user(message);
+                if new_message.mentions_me(ctx).await? {
+
+                    let typing = Typing::start(ctx.http.clone(), new_message.channel_id);
+                    
                     unsafe {
                     let res = ollama
                     .send_chat_messages_with_history(
@@ -154,6 +162,12 @@ async fn event_handler(
                     if let Err(why) = new_message.channel_id.say(&ctx.http, res.unwrap().message.content).await {
                         println!("Error sending message: {why:?}");
                     }
+                    typing.stop();
+                    }
+                }
+                else if LOG {
+                    unsafe{
+                        HISTORY.push(user_message)
                     }
                 }
             }
@@ -178,3 +192,4 @@ async fn on_error(error: poise::FrameworkError<'_, Data, Error>) {
         }
     }
 }
+
